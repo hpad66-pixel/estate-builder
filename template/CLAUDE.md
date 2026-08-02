@@ -25,3 +25,8 @@ Nothing acts on its own. A hat is worn only when {{AUTHOR}} starts a session or 
 ## Session start, any tool
 
 Connect this folder. Read SOUL.md, then this file. If material arrives (spoken, pasted, or as files), capture it into the well first, then do the work asked.
+
+
+## Content types
+
+This estate can hold a book, articles, and courses. See CONTENT-MAP.md for the lanes and where each piece lands. Use the lanes you chose at the interview; the others stay empty until you need them. The writing hat works in whichever lane the piece belongs to, always in {{AUTHOR}}'s voice, always through the same stations.

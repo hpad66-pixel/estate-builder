@@ -29,3 +29,16 @@ When the twelve answers are in, write the voice law:
 - Show them the finished SOUL.md and revise it with them until they say: that is me.
 
 Then remind them of the two standing rules of this estate: everything they dictate lands verbatim and dated in the well before any shaping, and nothing ships to GitHub except by their own hand on the seal.
+
+
+---
+
+## One more step: pick your content types
+
+Before the voice interview, or right after, ask the owner which lanes they want:
+
+- A book, or books. The book/ lane.
+- Articles, for Substack and LinkedIn. The articles/ lane.
+- Courses, for teaching. The courses/ lane.
+
+Keep the lanes they choose. The others can stay empty until they want them. Point them to CONTENT-MAP.md, which explains how a piece talks its way into the right lane. The rule is the same for all of them: SOUL.md is law, and the well comes first.
