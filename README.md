@@ -47,3 +47,13 @@ A Mac or Linux machine, git, python3. A GitHub account and the `gh` CLI only whe
 Dictation is captured verbatim before any shaping, so provenance is never in doubt. Everything is authored in the estate; every other place receives copies. Gates check the voice and the facts before anything ships. The seal is the only door to GitHub, and it swings one way, under the owner's hand.
 
 Reference build: the One Water estate, estate number one, already running.
+
+## The one-line install (v1)
+
+Once `install.sh` is served at `https://owos.ai/install.sh`, a person needs no git knowledge to start:
+
+```
+bash -c "$(curl -fsSL https://owos.ai/install.sh)"
+```
+
+It fetches this engine, refreshes it if they already have it, and runs the stamp. The four questions still run on their keyboard even though the installer arrived through a pipe. Hosting the file at owos.ai is a one-time deploy step on the One Water OS platform (Cloudflare).
