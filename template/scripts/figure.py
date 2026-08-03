@@ -20,6 +20,9 @@ A spec is a small JSON file. The 'type' decides the shape:
   loop         a feedback cycle          {"items": [...]}   (3 to 5 reads best)
   stat         one big number            {"value": "34", "label": "..."}
   quote        a pull quote              {"quote": "...", "attribution": "..."}
+  matrix       a two by two trade-off    {"x": "...", "y": "...", "quadrants": [4]}
+  stack        layers, foundation first  {"items": [...]}
+  timeline     dated marks on a line     {"items": [{"when": "", "what": ""}]}
 
 Every type also takes: title, kicker, caption.
 
@@ -339,12 +342,15 @@ def draw_stat(b, spec):
     p = []
     val = str(spec.get("value", ""))
     size = 190 if len(val) <= 4 else (140 if len(val) <= 7 else 100)
-    block = size * 0.82 + 48 + (33 if spec.get("label") else 0) + (24 if spec.get("source") else 0)
+    # the gap under the number has to scale with it: a hand-lettered face at 190px
+    # has descenders deep enough to sit on top of a fixed 48px offset
+    gap = size * 0.48 + 20
+    block = size * 0.82 + gap + (33 if spec.get("label") else 0) + (24 if spec.get("source") else 0)
     base = content_top(spec) + max(0.0, ((H - 108) - content_top(spec) - block) * 0.45) + size * 0.82
     p.append('<text x="%d" y="%.1f" font-family="%s" font-size="%d" fill="%s" '
              'text-anchor="middle" font-weight="700">%s</text>'
              % (W // 2, base, esc(f["display"]), size, c["accent1"], esc(val)))
-    y = base + 48
+    y = base + gap
     lbl = spec.get("label", "")
     if lbl:
         lines = wrap(lbl, 25, W - 260, max_lines=2)
@@ -381,6 +387,117 @@ def draw_quote(b, spec):
     return p
 
 
+def draw_matrix(b, spec):
+    """Two axes, four quadrants. The shape for risk against regret, effort
+    against value, anything where the point is the trade-off."""
+    c, f, r = b["colors"], b["fonts"], b["rules"]
+    p = []
+    top = content_top(spec)
+    mw = W - 236                      # leave room for the rotated y label
+    mh = min(H - top - 122, 344)
+    x0, y0 = 172.0, float(top + 4)
+    accents = [c["accent3"], c["accent2"], c["accent2"], c["accent1"]]
+    quads = (spec.get("quadrants") or [])[:4]
+    for i in range(4):
+        col, row = i % 2, i // 2
+        qx, qy = x0 + col * mw / 2, y0 + row * mh / 2
+        p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s" stroke="%s" '
+                 'stroke-width="1.5" opacity="0.96"%s/>'
+                 % (qx, qy, mw / 2, mh / 2, c["panel"], c["line"], rough(b)))
+        if i < len(quads) and quads[i]:
+            lines = wrap(quads[i], 18, mw / 2 - 60, max_lines=3)
+            p.append('<circle cx="%.1f" cy="%.1f" r="5" fill="%s"/>' % (qx + 22, qy + 30, accents[i]))
+            p.append(tspan(lines, qx + 38, qy + 35, 18, c["ink"], f["body"], 1.3))
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="2.5"%s/>'
+             % (x0 + mw / 2, y0, x0 + mw / 2, y0 + mh, c["muted"], rough(b)))
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="2.5"%s/>'
+             % (x0, y0 + mh / 2, x0 + mw, y0 + mh / 2, c["muted"], rough(b)))
+    lab = lambda t: t.upper() if r.get("uppercase_kicker") else t
+    if spec.get("x"):
+        p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="14" fill="%s" '
+                 'text-anchor="middle" letter-spacing="2">%s</text>'
+                 % (x0 + mw / 2, y0 + mh + 30, esc(f["mono"]), c["accent1"], esc(lab(spec["x"]))))
+    if spec.get("y"):
+        p.append('<text transform="translate(%.1f,%.1f) rotate(-90)" font-family="%s" '
+                 'font-size="14" fill="%s" text-anchor="middle" letter-spacing="2">%s</text>'
+                 % (x0 - 30, y0 + mh / 2, esc(f["mono"]), c["accent1"], esc(lab(spec["y"]))))
+    return p
+
+
+def draw_stack(b, spec):
+    """Layers, foundation at the bottom. Read from the ground up, which is the
+    point: the thing everyone talks about sits on the thing nobody funds."""
+    c, f, r = b["colors"], b["fonts"], b["rules"]
+    items = spec.get("items", [])[:5]
+    if not items:
+        return []
+    p = []
+    top = content_top(spec)
+    avail = H - top - 130
+    n = len(items)
+    bh = min(64.0, (avail - (n - 1) * 10) / n)
+    accents = [c["accent1"], c["accent2"], c["accent3"]]
+    for i, it in enumerate(reversed(items)):          # first item is the foundation
+        idx = n - 1 - i
+        y = top + i * (bh + 10)
+        inset = 34 * (n - 1 - i) * 0.42     # widest at the bottom, where the foundation is
+        p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s" stroke="%s" '
+                 'stroke-width="2" rx="%d"%s/>'
+                 % (64 + inset, y, W - 128 - inset * 2, bh, c["panel"],
+                    accents[idx % 3], r.get("radius", 8), rough(b)))
+        p.append('<rect x="%.1f" y="%.1f" width="6" height="%.1f" fill="%s" rx="3"/>'
+                 % (64 + inset, y, bh, accents[idx % 3]))
+        lines = wrap(it, 18, W - 200 - inset * 2, max_lines=2)
+        p.append(tspan(lines, 64 + inset + 24, y + bh / 2 + (6 if len(lines) == 1 else -3),
+                       18, c["ink"], f["body"], 1.3))
+    p.append('<text x="%d" y="%.1f" font-family="%s" font-size="12" fill="%s" '
+             'letter-spacing="2">%s</text>'
+             % (64, top + n * (bh + 10) + 16, esc(f["mono"]), c["muted"],
+                esc("FOUNDATION" if r.get("uppercase_kicker") else "foundation")))
+    return p
+
+
+def draw_timeline(b, spec):
+    """A line with dated marks. Accepts {"when":..,"what":..} or "1948 | text"."""
+    c, f = b["colors"], b["fonts"]
+    raw = spec.get("items", [])[:5]
+    items = []
+    for it in raw:
+        if isinstance(it, dict):
+            items.append((str(it.get("when", "")), str(it.get("what", ""))))
+        else:
+            parts = str(it).split("|", 1)
+            items.append((parts[0].strip(), parts[1].strip() if len(parts) > 1 else ""))
+    if not items:
+        return []
+    p = []
+    top = content_top(spec)
+    y = top + max(74.0, (H - top - 120) * 0.42)
+    accents = [c["accent1"], c["accent2"], c["accent3"]]
+    p.append('<line x1="64" y1="%.1f" x2="%d" y2="%.1f" stroke="%s" stroke-width="3"%s/>'
+             % (y, W - 64, y, c["line"], rough(b)))
+    n = len(items)
+    step = (W - 128) / max(1, n - 1) if n > 1 else 0
+    for i, (when, what) in enumerate(items):
+        x = 64 + i * step if n > 1 else W / 2
+        a = accents[i % 3]
+        p.append('<circle cx="%.1f" cy="%.1f" r="11" fill="%s"%s/>' % (x, y, a, rough(b)))
+        p.append('<circle cx="%.1f" cy="%.1f" r="4" fill="%s"/>' % (x, y, c["bg"]))
+        anchor = "middle"
+        if i == 0:
+            anchor = "start"
+        elif i == n - 1:
+            anchor = "end"
+        p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="19" fill="%s" '
+                 'text-anchor="%s" font-weight="700">%s</text>'
+                 % (x, y - 26, esc(f["display"]), a, anchor, esc(when)))
+        for j, ln in enumerate(wrap(what, 16, step * 0.94 if n > 1 else 420, max_lines=4)):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="16" fill="%s" '
+                     'text-anchor="%s">%s</text>'
+                     % (x, y + 36 + j * 22, esc(f["body"]), c["ink"], anchor, esc(ln)))
+    return p
+
+
 SHAPES = {
     "sequence": lambda b, s: draw_sequence(b, s, False),
     "framework": lambda b, s: draw_sequence(b, s, True),
@@ -388,6 +505,9 @@ SHAPES = {
     "loop": draw_loop,
     "stat": draw_stat,
     "quote": draw_quote,
+    "matrix": draw_matrix,
+    "stack": draw_stack,
+    "timeline": draw_timeline,
 }
 
 
