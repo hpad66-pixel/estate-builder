@@ -41,6 +41,13 @@ estate makes asks that folder, so nothing hardcodes a palette.
 The Illustrator hat works here. It obeys the brand the same way the Scribe obeys
 SOUL.md. It never invents a color that is not in brand/.
 
+## The book
+
+`python3 scripts/build_book.py --pdf` compiles book/chapters/ into
+outputs/book-compiled/. It runs the voice gate first, skips anything still marked
+`status: draft`, inlines the figures, and writes a provenance appendix from each
+chapter's `built_from` field. Compiled files are built, never hand-edited.
+
 ## Staying current
 
 The stamp is a one-time copy, so an estate does not receive later engine work by

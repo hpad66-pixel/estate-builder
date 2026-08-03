@@ -48,7 +48,7 @@ printf '%s\n' "$DEST" > "$DEST/scripts/repos.txt"
 # to run without it, so nobody can point the updater at a hand-built repo and
 # have their own operating rules overwritten.
 printf 'stamped %s\nengine v1\n' "$(date +%Y-%m-%d)" > "$DEST/.soulos-estate"
-chmod +x "$DEST/scripts/seal_all.sh" "$DEST/scripts/qc_check.py" "$DEST/scripts/figure.py" "$DEST/scripts/update_estate.sh" 2>/dev/null || true
+chmod +x "$DEST/scripts/seal_all.sh" "$DEST/scripts/qc_check.py" "$DEST/scripts/figure.py" "$DEST/scripts/build_book.py" "$DEST/scripts/update_estate.sh" 2>/dev/null || true
 
 cd "$DEST"
 git init -q
@@ -80,6 +80,8 @@ else
   say "  4. On publish day: make a GitHub account, install gh, then"
   say "     gh repo create $SLUG --private --source $DEST --push"
 fi
-say "  5. From then on, one command ships everything:"
+say "  5. When chapters exist, compile the book:"
+say "       python3 $DEST/scripts/build_book.py --pdf"
+say "  6. From then on, one command ships everything:"
 say "     bash $DEST/scripts/seal_all.sh \"what changed\""
 say "The estate works fully offline until publish day. Nothing leaves without your hand on the seal."
