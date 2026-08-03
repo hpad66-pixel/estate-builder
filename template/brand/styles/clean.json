@@ -1,0 +1,17 @@
+{
+  "name": "clean",
+  "label": "Clean",
+  "description": "White, one accent, generous space, no ornament at all. The figure gets out of the way of the idea.",
+  "best_for": "Corporate and consulting work, reports that get forwarded, anyone whose employer has opinions about decoration.",
+  "colors": {
+    "bg": "#ffffff", "panel": "#f5f7fa", "ink": "#0F1728", "ink2": "#44546A",
+    "muted": "#8595AB", "line": "#E4E9F0",
+    "accent1": "#0B7DC2", "accent2": "#2E8B57", "accent3": "#C0392B"
+  },
+  "fonts": {
+    "display": "Inter, system-ui, sans-serif",
+    "body": "Inter, system-ui, sans-serif",
+    "mono": "'JetBrains Mono', monospace"
+  },
+  "rules": { "roughen": false, "grid": false, "top_rule": false, "radius": 16, "border": true, "uppercase_kicker": true }
+}

@@ -1,0 +1,10 @@
+{
+  "owner": "{{AUTHOR}}",
+  "style": "sketchbook",
+  "copyright": "{{AUTHOR}}",
+  "logo": "",
+  "logo_text": "",
+  "colors": {},
+  "fonts": {},
+  "_note": "This file is yours. 'style' picks a preset from brand/styles/. Anything you put in 'colors' or 'fonts' overrides that preset, so you can start from a preset and make it your own without editing the preset itself. Run: python3 scripts/figure.py --styles to see the options, and --preview to render one of each."
+}

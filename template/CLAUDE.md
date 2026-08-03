@@ -27,6 +27,28 @@ Nothing acts on its own. A hat is worn only when {{AUTHOR}} starts a session or 
 Connect this folder. Read SOUL.md, then this file. If material arrives (spoken, pasted, or as files), capture it into the well first, then do the work asked.
 
 
+## How it looks
+
+Your visual identity lives in brand/. brand.json picks a style and overrides any
+color or font on top of it; brand/styles/ holds the presets. Every figure this
+estate makes asks that folder, so nothing hardcodes a palette.
+
+- Make a figure: write a small spec and run `python3 scripts/figure.py <spec>.json`
+- See the styles: `python3 scripts/figure.py --styles` and `--preview`
+- Change the brand: BRAND-INTERVIEW.md, or edit brand/brand.json directly
+- The rules that are not about software: book/ART.md
+
+The Illustrator hat works here. It obeys the brand the same way the Scribe obeys
+SOUL.md. It never invents a color that is not in brand/.
+
+## Staying current
+
+The stamp is a one-time copy, so an estate does not receive later engine work by
+itself. `bash scripts/update_estate.sh` refreshes the engine-owned files (scripts,
+style presets, lane templates, these rules) and never touches SOUL.md,
+brand/brand.json, your logo, your chapters, your figures, your article folders, or
+the well. Run it with --dry-run first. It backs up anything it replaces.
+
 ## Content types
 
 This estate can hold a book, articles, and courses. See CONTENT-MAP.md for the lanes and where each piece lands. Use the lanes you chose at the interview; the others stay empty until you need them. The writing hat works in whichever lane the piece belongs to, always in {{AUTHOR}}'s voice, always through the same stations.

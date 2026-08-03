@@ -31,19 +31,20 @@ cp -R "$HERE/template" "$DEST"
 # hidden cache folder is where a non-technical owner gets stuck and stops.
 cp "$HERE/INTERVIEW.md" "$DEST/INTERVIEW.md"
 cp "$HERE/INTERVIEW-LONG.md" "$DEST/INTERVIEW-LONG.md"
+cp "$HERE/BRAND-INTERVIEW.md" "$DEST/BRAND-INTERVIEW.md"
 
 python3 - "$DEST" "$AUTHOR" "$SLUG" "$BOOK" <<'PYFILL'
 import sys, pathlib
 dest, author, slug, book = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 for p in pathlib.Path(dest).rglob('*'):
-    if p.is_file() and p.suffix in {'.md', '.sh', '.py', '.txt'}:
+    if p.is_file() and p.suffix in {'.md', '.sh', '.py', '.txt', '.json', '.css', '.html'}:
         t = p.read_text(encoding='utf-8')
         t = t.replace('{{AUTHOR}}', author).replace('{{SLUG}}', slug).replace('{{BOOK}}', book)
         p.write_text(t, encoding='utf-8')
 PYFILL
 
 printf '%s\n' "$DEST" > "$DEST/scripts/repos.txt"
-chmod +x "$DEST/scripts/seal_all.sh" "$DEST/scripts/qc_check.py" 2>/dev/null || true
+chmod +x "$DEST/scripts/seal_all.sh" "$DEST/scripts/qc_check.py" "$DEST/scripts/figure.py" "$DEST/scripts/update_estate.sh" 2>/dev/null || true
 
 cd "$DEST"
 git init -q
@@ -62,14 +63,19 @@ say "     you sound, so no machine ever smooths you into sounding like everyone"
 say "     else. Say the answers out loud rather than typing them."
 say "       INTERVIEW.md       12 questions, about 20 minutes. Start here."
 say "       INTERVIEW-LONG.md  100 questions, an hour or two. Deeper grain."
-say "  2. Start speaking. Everything lands verbatim, dated, in"
+say "  2. Make it look like you. Run:"
+say "       python3 $DEST/scripts/figure.py --preview"
+say "     Open brand/preview/ and pick a style, then paste BRAND-INTERVIEW.md"
+say "     into your AI tool to set your colors, your mark, and your copyright."
+say "     Every figure you ever make inherits it."
+say "  3. Start speaking. Everything lands verbatim, dated, in"
 say "     outputs/book-evidence/book-one/raw-dictations.md before any shaping."
 if [ -n "$GHUSER" ]; then
-  say "  3. On publish day: gh repo create $SLUG --private --source $DEST --push"
+  say "  4. On publish day: gh repo create $SLUG --private --source $DEST --push"
 else
-  say "  3. On publish day: make a GitHub account, install gh, then"
+  say "  4. On publish day: make a GitHub account, install gh, then"
   say "     gh repo create $SLUG --private --source $DEST --push"
 fi
-say "  4. From then on, one command ships everything:"
+say "  5. From then on, one command ships everything:"
 say "     bash $DEST/scripts/seal_all.sh \"what changed\""
 say "The estate works fully offline until publish day. Nothing leaves without your hand on the seal."

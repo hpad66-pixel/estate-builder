@@ -1,3 +1,5 @@
 .DS_Store
 *.bak
 __pycache__/
+.soulos-backup-*/
+brand/preview/

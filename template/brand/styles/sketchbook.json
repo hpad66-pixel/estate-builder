@@ -1,0 +1,17 @@
+{
+  "name": "sketchbook",
+  "label": "Sketchbook",
+  "description": "Hand drawn line work on warm paper. Reads like a notebook somebody thought in, not a slide somebody presented.",
+  "best_for": "Memoir, field stories, teaching by drawing. Anything where you want the reader to feel a person made this.",
+  "colors": {
+    "bg": "#f4efe5", "panel": "#efe8da", "ink": "#1a1a1a", "ink2": "#3a352d",
+    "muted": "#7c7566", "line": "#c9c0ad",
+    "accent1": "#2f6f6a", "accent2": "#b4762a", "accent3": "#9c3b30"
+  },
+  "fonts": {
+    "display": "Caveat, 'Bradley Hand', cursive",
+    "body": "Spectral, Georgia, serif",
+    "mono": "'Courier New', monospace"
+  },
+  "rules": { "roughen": true, "grid": false, "top_rule": false, "radius": 14, "border": true, "uppercase_kicker": false }
+}

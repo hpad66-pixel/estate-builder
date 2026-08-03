@@ -1,0 +1,17 @@
+{
+  "name": "blueprint",
+  "label": "Blueprint",
+  "description": "Drafting table. Cyan on deep blue, a faint grid, monospaced labels. Technical without being cold.",
+  "best_for": "Engineering, infrastructure, systems and process work. Readers who trust a drawing more than a photo.",
+  "colors": {
+    "bg": "#0d2137", "panel": "#123049", "ink": "#dff1ff", "ink2": "#a9d6f5",
+    "muted": "#6f9dbf", "line": "#1e4a6b",
+    "accent1": "#5ad2f4", "accent2": "#f2c14e", "accent3": "#ff7a6b"
+  },
+  "fonts": {
+    "display": "'IBM Plex Sans', Inter, sans-serif",
+    "body": "'IBM Plex Sans', Inter, sans-serif",
+    "mono": "'IBM Plex Mono', 'Courier New', monospace"
+  },
+  "rules": { "roughen": false, "grid": true, "top_rule": false, "radius": 2, "border": true, "uppercase_kicker": true }
+}

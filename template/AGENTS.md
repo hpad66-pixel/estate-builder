@@ -7,4 +7,7 @@
 5. The Scribe writes book/chapters/ only. Gates report; they never rewrite.
 6. End every file-changing session by telling {{AUTHOR}} the seal is due: bash scripts/seal_all.sh "what changed". Never push in {{AUTHOR}}'s name yourself unless asked in that session.
 7. Lived details are never invented. No claim without a source. [VERIFY] flags stay until cleared.
-8. This estate may hold more than a book. See CONTENT-MAP.md for the lanes, book, articles, and courses, and where each lands. The writing hat works in the lane the piece belongs to, and SOUL.md is law in every lane.
+8. Figures obey brand/ the way writing obeys SOUL.md. Never invent a color that
+   is not in brand/brand.json or the active style. Make figures with
+   scripts/figure.py; the rules that are not about software are in book/ART.md.
+9. This estate may hold more than a book. See CONTENT-MAP.md for the lanes, book, articles, and courses, and where each lands. The writing hat works in the lane the piece belongs to, and SOUL.md is law in every lane.

@@ -1,0 +1,17 @@
+{
+  "name": "press",
+  "label": "Press",
+  "description": "Newsprint. Hard black on off white, one spot color, heavy rules. Loud on a phone, which is where most people will see it.",
+  "best_for": "Social cards, pull quotes, anything that has to stop a thumb.",
+  "colors": {
+    "bg": "#f7f4ee", "panel": "#eae5da", "ink": "#111111", "ink2": "#333333",
+    "muted": "#6b6b6b", "line": "#111111",
+    "accent1": "#d7263d", "accent2": "#1b4965", "accent3": "#8a8a8a"
+  },
+  "fonts": {
+    "display": "'Archivo Black', Impact, sans-serif",
+    "body": "'Archivo', Helvetica, Arial, sans-serif",
+    "mono": "'Courier New', monospace"
+  },
+  "rules": { "roughen": false, "grid": false, "top_rule": true, "radius": 0, "border": true, "uppercase_kicker": true }
+}

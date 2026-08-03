@@ -1,0 +1,17 @@
+{
+  "name": "editorial",
+  "label": "Editorial Modern",
+  "description": "Deep navy, a single gold, a serif with a spine. Magazine grade. The look of a piece that expects to be quoted.",
+  "best_for": "Thought leadership, Substack essays, LinkedIn carousels, a book that wants to look authored.",
+  "colors": {
+    "bg": "#0B0E14", "panel": "#161D2B", "ink": "#EAF0F7", "ink2": "#c7d2e0",
+    "muted": "#93A1B6", "line": "#262E3C",
+    "accent1": "#D8A93A", "accent2": "#6CA8FF", "accent3": "#E07A5F"
+  },
+  "fonts": {
+    "display": "Fraunces, Georgia, serif",
+    "body": "Geist, Inter, system-ui, sans-serif",
+    "mono": "'Geist Mono', 'JetBrains Mono', monospace"
+  },
+  "rules": { "roughen": false, "grid": false, "top_rule": true, "radius": 10, "border": false, "uppercase_kicker": true }
+}
