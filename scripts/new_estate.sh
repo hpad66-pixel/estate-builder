@@ -30,6 +30,7 @@ cp -R "$HERE/template" "$DEST"
 # The interview travels with the estate. Asking someone to go find it inside a
 # hidden cache folder is where a non-technical owner gets stuck and stops.
 cp "$HERE/INTERVIEW.md" "$DEST/INTERVIEW.md"
+cp "$HERE/INTERVIEW-LONG.md" "$DEST/INTERVIEW-LONG.md"
 
 python3 - "$DEST" "$AUTHOR" "$SLUG" "$BOOK" <<'PYFILL'
 import sys, pathlib
@@ -55,10 +56,12 @@ git commit -q -m "estate stamped: $SLUG"
 
 say "Stamped: $DEST"
 say "Next, in order:"
-say "  1. Open $DEST in your AI tool (Claude, Cowork, Codex) and paste in the file"
-say "     INTERVIEW.md, which is sitting in that folder. The interview writes your"
-say "     SOUL.md: how you sound, so no machine ever smooths you into sounding"
-say "     like everyone else."
+say "  1. Open $DEST in your AI tool (Claude, Cowork, Codex) and paste in one of"
+say "     the two interviews sitting in that folder. Both write your SOUL.md: how"
+say "     you sound, so no machine ever smooths you into sounding like everyone"
+say "     else. Say the answers out loud rather than typing them."
+say "       INTERVIEW.md       12 questions, about 20 minutes. Start here."
+say "       INTERVIEW-LONG.md  100 questions, an hour or two. Deeper grain."
 say "  2. Start speaking. Everything lands verbatim, dated, in"
 say "     outputs/book-evidence/book-one/raw-dictations.md before any shaping."
 if [ -n "$GHUSER" ]; then

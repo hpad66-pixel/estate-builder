@@ -1,6 +1,8 @@
-# The Interview
+# The Interview · 12 questions
 
 Paste everything below this line into an AI session opened inside your new estate folder. It will interview you, then write your voice law.
+
+This is the short version, about twenty minutes. It is enough to start writing today. When you want a voice law with more grain in it, run INTERVIEW-LONG.md, which asks a hundred questions across six territories and takes an hour or two. Either way, say your answers out loud rather than typing them. Typing makes you edit yourself.
 
 ---
 
