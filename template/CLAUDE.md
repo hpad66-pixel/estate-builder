@@ -48,6 +48,17 @@ outputs/book-compiled/. It runs the voice gate first, skips anything still marke
 `status: draft`, inlines the figures, and writes a provenance appendix from each
 chapter's `built_from` field. Compiled files are built, never hand-edited.
 
+## Your own site
+
+`python3 scripts/build_site.py` turns profile.md, your published articles, and
+your compiled book into a small static site in your brand, written to
+outputs/site/. Use `--to docs` if you want GitHub Pages to serve it.
+
+It refuses to build until profile.md says `published: true`, it includes only
+articles marked `status: published`, and it checks its own output before
+finishing to be certain SOUL.md, the well and the interviews never reached it.
+Your voice law and your raw dictation are not content.
+
 ## Staying current
 
 The stamp is a one-time copy, so an estate does not receive later engine work by

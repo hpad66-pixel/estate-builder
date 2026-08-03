@@ -71,7 +71,7 @@ E, G = pathlib.Path(estate), pathlib.Path(engine)
 OWNED = [
     "CLAUDE.md", "AGENTS.md", "CONTENT-MAP.md",
     "INTERVIEW.md", "INTERVIEW-LONG.md", "BRAND-INTERVIEW.md",
-    "scripts/figure.py", "scripts/build_book.py", "scripts/qc_check.py", "scripts/seal_all.sh",
+    "scripts/figure.py", "scripts/build_book.py", "scripts/build_site.py", "scripts/qc_check.py", "scripts/seal_all.sh",
     "scripts/update_estate.sh",
     "brand/README.md",
     "book/ART.md", "book/chapters/README.md", "book/figures/README.md",

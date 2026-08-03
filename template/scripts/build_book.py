@@ -118,6 +118,10 @@ def embed_image(src, alt):
 
 
 def markdown(text):
+    # HTML comments are notes to the author, not content. The templates are full
+    # of them, so anything that renders markdown has to drop them first or every
+    # instruction ends up printed on a public page.
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
     out, lines, i = [], text.split("\n"), 0
     while i < len(lines):
         ln = lines[i]
