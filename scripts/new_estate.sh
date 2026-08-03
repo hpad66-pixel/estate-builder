@@ -44,6 +44,10 @@ for p in pathlib.Path(dest).rglob('*'):
 PYFILL
 
 printf '%s\n' "$DEST" > "$DEST/scripts/repos.txt"
+# Marker: proves this folder was stamped by the engine. update_estate.sh refuses
+# to run without it, so nobody can point the updater at a hand-built repo and
+# have their own operating rules overwritten.
+printf 'stamped %s\nengine v1\n' "$(date +%Y-%m-%d)" > "$DEST/.soulos-estate"
 chmod +x "$DEST/scripts/seal_all.sh" "$DEST/scripts/qc_check.py" "$DEST/scripts/figure.py" "$DEST/scripts/update_estate.sh" 2>/dev/null || true
 
 cd "$DEST"

@@ -37,6 +37,18 @@ say() { printf '\n%s\n' "$*"; }
   exit 1
 }
 
+if [ ! -f "$ESTATE/.soulos-estate" ]; then
+  echo ""
+  echo "This folder was not stamped by the engine: no .soulos-estate marker."
+  echo "Refusing to run. This updater replaces CLAUDE.md, AGENTS.md, the lane"
+  echo "templates and the scripts, which would overwrite the operating rules of a"
+  echo "hand-built repository."
+  echo ""
+  echo "If you know this is an estate, run --dry-run first, then create the marker"
+  echo "yourself: touch .soulos-estate"
+  exit 1
+fi
+
 say "Updating: $ESTATE"
 say "From engine: $ENGINE"
 
