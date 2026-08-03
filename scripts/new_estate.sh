@@ -27,6 +27,9 @@ fi
 mkdir -p "$HOME/dev"
 
 cp -R "$HERE/template" "$DEST"
+# The interview travels with the estate. Asking someone to go find it inside a
+# hidden cache folder is where a non-technical owner gets stuck and stops.
+cp "$HERE/INTERVIEW.md" "$DEST/INTERVIEW.md"
 
 python3 - "$DEST" "$AUTHOR" "$SLUG" "$BOOK" <<'PYFILL'
 import sys, pathlib
@@ -52,9 +55,10 @@ git commit -q -m "estate stamped: $SLUG"
 
 say "Stamped: $DEST"
 say "Next, in order:"
-say "  1. Open $DEST in your AI tool (Claude, Cowork, Codex) and paste in INTERVIEW.md"
-say "     from the estate-builder folder. The interview writes your SOUL.md: how you"
-say "     sound, so no machine ever smooths you into sounding like everyone else."
+say "  1. Open $DEST in your AI tool (Claude, Cowork, Codex) and paste in the file"
+say "     INTERVIEW.md, which is sitting in that folder. The interview writes your"
+say "     SOUL.md: how you sound, so no machine ever smooths you into sounding"
+say "     like everyone else."
 say "  2. Start speaking. Everything lands verbatim, dated, in"
 say "     outputs/book-evidence/book-one/raw-dictations.md before any shaping."
 if [ -n "$GHUSER" ]; then
