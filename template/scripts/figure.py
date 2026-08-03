@@ -23,6 +23,14 @@ A spec is a small JSON file. The 'type' decides the shape:
   matrix       a two by two trade-off    {"x": "...", "y": "...", "quadrants": [4]}
   stack        layers, foundation first  {"items": [...]}
   timeline     dated marks on a line     {"items": [{"when": "", "what": ""}]}
+  balance      a weighing beam           {"left": {...}, "right": {...}, "tilt": 0.16}
+  chain        links, the weak one named {"items": [...], "weak": 2}
+  gap          two levels and the space  {"high": {...}, "low": {...}, "gap": "..."}
+  network      nodes and the lines       {"items": [...], "links": [[0,1]], "hub": 0}
+  iceberg      seen against unseen       {"above": "...", "below": [...]}
+  funnel       what survives to the end  {"items": [{"label": "", "value": ""}]}
+  curve        two trajectories          {"a": {...}, "b": {...}, "x": "", "y": ""}
+  venn         two sets and the overlap  {"left": "", "right": "", "overlap": ""}
 
 Every type also takes: title, kicker, caption.
 
@@ -152,6 +160,13 @@ def content_top(spec):
         return 150
     n = len(wrap(t, 44, W - 140, bold=True, max_lines=2))
     return 146 + (n - 1) * 52 + 62
+
+
+def vcenter(spec, block):
+    """Sit a short drawing in the space the title left, instead of jamming it to
+    the top with a third of the canvas empty underneath."""
+    t = content_top(spec)
+    return max(0.0, ((H - 112) - t - block) * 0.42)
 
 
 def chrome(b, spec):
@@ -498,6 +513,342 @@ def draw_timeline(b, spec):
     return p
 
 
+def _pan(b, cx, cy, w):
+    c = b["colors"]
+    return ('<path d="M %.1f %.1f Q %.1f %.1f %.1f %.1f" fill="none" stroke="%s" '
+            'stroke-width="3" stroke-linecap="round"%s/>'
+            % (cx - w, cy, cx, cy + w * 0.52, cx + w, cy, c["ink2"], rough(b)))
+
+
+def draw_balance(b, spec):
+    """A weighing beam. Two things on a scale, and the beam tips. The shape for
+    an argument where one side is countable and the other is not."""
+    c, f = b["colors"], b["fonts"]
+    p = []
+    top = content_top(spec)
+    cx = W / 2
+    py = top + 42 + vcenter(spec, 316)
+    L = 340.0
+    t = float(spec.get("tilt", 0.16))
+    ly, ry = py - t * L * 0.30, py + t * L * 0.30
+    base = py + 172
+
+    p.append('<path d="M %.1f %.1f L %.1f %.1f L %.1f %.1f Z" fill="%s"%s/>'
+             % (cx - 34, base, cx + 34, base, cx, py + 8, c["muted"], rough(b)))
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="3.5" '
+             'stroke-linecap="round"%s/>' % (cx - 46, base, cx + 46, base, c["ink2"], rough(b)))
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="4.5" '
+             'stroke-linecap="round"%s/>' % (cx - L, ly, cx + L, ry, c["accent2"], rough(b)))
+    p.append('<circle cx="%.1f" cy="%.1f" r="8" fill="%s"/>' % (cx, py + 8, c["accent2"]))
+
+    sides = [(cx - L, ly, spec.get("left"), c["accent1"], "left"),
+             (cx + L, ry, spec.get("right"), c["accent3"], "right")]
+    for ex, ey, item, accent, side in sides:
+        if isinstance(item, dict):
+            title, note = str(item.get("title", "")), str(item.get("note", ""))
+        else:
+            title, note = str(item or ""), ""
+        p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="2"%s/>'
+                 % (ex, ey, ex, ey + 58, c["muted"], rough(b)))
+        p.append(_pan(b, ex, ey + 58, 78))
+        p.append('<ellipse cx="%.1f" cy="%.1f" rx="34" ry="17" fill="%s" opacity="0.9"%s/>'
+                 % (ex, ey + 44, accent, rough(b)))
+        for i, ln in enumerate(wrap(title, 20, 300, max_lines=2)):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="20" fill="%s" '
+                     'text-anchor="middle" font-weight="700">%s</text>'
+                     % (ex, ey + 118 + i * 26, esc(f["display"]), c["ink"], esc(ln)))
+        if note:
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="14" fill="%s" '
+                     'text-anchor="middle">%s</text>'
+                     % (ex, ey + 118 + 26 * len(wrap(title, 20, 300, max_lines=2)) + 4,
+                        esc(f["mono"]), accent, esc(note)))
+    if spec.get("verdict"):
+        p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="17" fill="%s" '
+                 'text-anchor="middle" font-style="italic">%s</text>'
+                 % (cx, base + 44, esc(f["display"]), c["muted"], esc(spec["verdict"])))
+    return p
+
+
+def draw_chain(b, spec):
+    """Links in a line, with the weak one named. A chain is only as strong as
+    the link nobody looked at."""
+    c, f = b["colors"], b["fonts"]
+    items = spec.get("items", [])[:5]
+    if not items:
+        return []
+    p = []
+    top = content_top(spec)
+    n = len(items)
+    weak = spec.get("weak", -1)
+    if isinstance(weak, str):
+        weak = items.index(weak) if weak in items else -1
+    gap = 16.0
+    lw = (W - 128 - gap * (n - 1)) / n
+    lh = 108.0
+    y = top + 26 + vcenter(spec, 168)
+    for i, it in enumerate(items):
+        x = 64 + i * (lw + gap)
+        broken = (i == weak)
+        col = c["accent3"] if broken else c["accent1"]
+        p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="%.1f" fill="none" '
+                 'stroke="%s" stroke-width="9"%s%s/>'
+                 % (x, y, lw, lh, lh / 2, col,
+                    ' stroke-dasharray="16 11"' if broken else "", rough(b)))
+        if i < n - 1:
+            p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+                     'stroke-width="7" stroke-linecap="round"%s/>'
+                     % (x + lw - 4, y + lh / 2, x + lw + gap + 4, y + lh / 2,
+                        c["accent3"] if (broken or i + 1 == weak) else c["accent1"], rough(b)))
+        for j, ln in enumerate(wrap(it, 17, lw - 46, max_lines=3)):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="17" fill="%s" '
+                     'text-anchor="middle">%s</text>'
+                     % (x + lw / 2, y + lh / 2 - (len(wrap(it, 17, lw - 46, max_lines=3)) - 1) * 11
+                        + j * 22 + 6, esc(f["body"]), c["ink"], esc(ln)))
+        if broken and spec.get("weak_note"):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="14" fill="%s" '
+                     'text-anchor="middle" letter-spacing="1.4">%s</text>'
+                     % (x + lw / 2, y + lh + 30, esc(f["mono"]), c["accent3"],
+                        esc(spec["weak_note"])))
+    return p
+
+
+def draw_gap(b, spec):
+    """Two levels and the distance between them. The gap is the argument."""
+    c, f = b["colors"], b["fonts"]
+    p = []
+    top = content_top(spec)
+    hi, lo = spec.get("high") or {}, spec.get("low") or {}
+    if isinstance(hi, str):
+        hi = {"label": hi}
+    if isinstance(lo, str):
+        lo = {"label": lo}
+    off = vcenter(spec, 256)
+    y1 = top + 34 + off
+    y2 = top + 210 + off
+    for y, d, accent in ((y1, hi, c["accent1"]), (y2, lo, c["accent3"])):
+        p.append('<rect x="64" y="%.1f" width="%d" height="30" rx="6" fill="%s" '
+                 'opacity="0.92"%s/>' % (y, W - 128, accent, rough(b)))
+        p.append('<text x="80" y="%.1f" font-family="%s" font-size="19" fill="%s" '
+                 'font-weight="700">%s</text>'
+                 % (y - 12, esc(f["body"]), c["ink"], esc(str(d.get("label", "")))))
+        if d.get("value"):
+            p.append('<text x="%d" y="%.1f" font-family="%s" font-size="19" fill="%s" '
+                     'text-anchor="end" font-weight="700">%s</text>'
+                     % (W - 80, y - 12, esc(f["mono"]), accent, esc(str(d["value"]))))
+    mx = W / 2
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="2.5" '
+             'stroke-dasharray="8 8"%s/>' % (mx, y1 + 34, mx, y2 - 4, c["muted"], rough(b)))
+    for yy, dy in ((y1 + 34, 1), (y2 - 4, -1)):
+        p.append('<path d="M %.1f %.1f L %.1f %.1f L %.1f %.1f" fill="none" stroke="%s" '
+                 'stroke-width="2.5"%s/>'
+                 % (mx - 7, yy + 9 * dy, mx, yy, mx + 7, yy + 9 * dy, c["muted"], rough(b)))
+    if spec.get("gap"):
+        lines = wrap(str(spec["gap"]), 21, 340, max_lines=3)
+        for i, ln in enumerate(lines):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="21" fill="%s" '
+                     'text-anchor="middle" font-style="italic">%s</text>'
+                     % (mx, (y1 + y2) / 2 - (len(lines) - 1) * 14 + i * 28, esc(f["display"]),
+                        c["ink"], esc(ln)))
+    return p
+
+
+def draw_network(b, spec):
+    """Nodes and the lines between them. Everything is a graph once you draw it."""
+    c, f = b["colors"], b["fonts"]
+    items = spec.get("items", [])[:7]
+    if not items:
+        return []
+    p = []
+    top = content_top(spec)
+    cx = W / 2
+    cy = min(top + 168, H - 236)
+    rad = 148.0
+    n = len(items)
+    pts = []
+    for i in range(n):
+        a = -math.pi / 2 + i * 2 * math.pi / n
+        pts.append((cx + rad * 1.85 * math.cos(a), cy + rad * math.sin(a)))
+    links = spec.get("links")
+    if not links:
+        links = [[i, (i + 1) % n] for i in range(n)] + [[0, i] for i in range(2, n - 1)]
+    for a, z in links:
+        if 0 <= a < n and 0 <= z < n:
+            p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+                     'stroke-width="2" opacity="0.75"%s/>'
+                     % (pts[a][0], pts[a][1], pts[z][0], pts[z][1], c["line"], rough(b)))
+    accents = [c["accent1"], c["accent2"], c["accent3"]]
+    hub = spec.get("hub", -1)
+    for i, (x, y) in enumerate(pts):
+        r = 24 if i == hub else 17
+        p.append('<circle cx="%.1f" cy="%.1f" r="%d" fill="%s"%s/>'
+                 % (x, y, r, accents[i % 3] if i != hub else c["accent2"], rough(b)))
+        lines = wrap(items[i], 15, 210, max_lines=2)
+        anchor = "middle"
+        off = r + 20
+        dy = off if y >= cy else -(off - 4)
+        if x > cx + 120:
+            anchor, dy = "start", 5
+        elif x < cx - 120:
+            anchor, dy = "end", 5
+        for j, ln in enumerate(lines):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="15" fill="%s" '
+                     'text-anchor="%s">%s</text>'
+                     % (x + (r + 12 if anchor == "start" else (-(r + 12) if anchor == "end" else 0)),
+                        y + dy + j * 19, esc(f["body"]), c["ink"], anchor, esc(ln)))
+    return p
+
+
+def draw_iceberg(b, spec):
+    """What everyone argues about, and what is actually holding it up."""
+    c, f = b["colors"], b["fonts"]
+    p = []
+    top = content_top(spec)
+    cx = W / 2
+    water = top + 96
+    p.append('<path d="M %.1f %.1f L %.1f %.1f L %.1f %.1f Z" fill="%s"%s/>'
+             % (cx, top + 6, cx - 96, water, cx + 96, water, c["accent1"], rough(b)))
+    depth = min(H - water - 128, 268)
+    p.append('<path d="M %.1f %.1f L %.1f %.1f L %.1f %.1f L %.1f %.1f Z" fill="%s" '
+             'opacity="0.55"%s/>'
+             % (cx - 96, water, cx + 96, water, cx + 236, water + depth,
+                cx - 236, water + depth, c["accent2"], rough(b)))
+    p.append('<line x1="40" y1="%.1f" x2="%d" y2="%.1f" stroke="%s" stroke-width="2.5" '
+             'stroke-dasharray="12 8"%s/>' % (water, W - 40, water, c["muted"], rough(b)))
+    if spec.get("above"):
+        p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="20" fill="%s" '
+                 'text-anchor="end" font-weight="700">%s</text>'
+                 % (cx - 128, top + 56, esc(f["display"]), c["ink"], esc(str(spec["above"]))))
+    if spec.get("waterline"):
+        p.append('<text x="%d" y="%.1f" font-family="%s" font-size="13" fill="%s" '
+                 'text-anchor="end" letter-spacing="1.6">%s</text>'
+                 % (W - 44, water - 10, esc(f["mono"]), c["muted"], esc(str(spec["waterline"]))))
+    below = spec.get("below", [])[:4]
+    for i, it in enumerate(below):
+        y = water + 44 + i * 52
+        p.append('<circle cx="%.1f" cy="%.1f" r="5" fill="%s"/>' % (cx - 200, y - 5, c["accent3"]))
+        for j, ln in enumerate(wrap(it, 17, 360, max_lines=2)):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="17" fill="%s">%s</text>'
+                     % (cx - 184, y + j * 21, esc(f["body"]), c["ink"], esc(ln)))
+    return p
+
+
+def draw_funnel(b, spec):
+    """What goes in at the top, what survives to the bottom."""
+    c, f = b["colors"], b["fonts"]
+    raw = spec.get("items", [])[:5]
+    if not raw:
+        return []
+    items = [(str(x.get("label", "")), str(x.get("value", ""))) if isinstance(x, dict)
+             else (str(x), "") for x in raw]
+    p = []
+    top = content_top(spec)
+    n = len(items)
+    bh = min(62.0, (H - top - 150) / n - 8)
+    accents = [c["accent1"], c["accent2"], c["accent3"]]
+    wide, narrow = W - 380, 280.0     # the right column carries the values
+    for i, (label, val) in enumerate(items):
+        t0 = i / n
+        t1 = (i + 1) / n
+        w0 = wide - (wide - narrow) * t0
+        w1 = wide - (wide - narrow) * t1
+        y = top + i * (bh + 8)
+        p.append('<path d="M %.1f %.1f L %.1f %.1f L %.1f %.1f L %.1f %.1f Z" fill="%s" '
+                 'stroke="%s" stroke-width="2" opacity="0.9"%s/>'
+                 % (W / 2 - w0 / 2, y, W / 2 + w0 / 2, y, W / 2 + w1 / 2, y + bh,
+                    W / 2 - w1 / 2, y + bh, c["panel"], accents[i % 3], rough(b)))
+        p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="18" fill="%s" '
+                 'text-anchor="middle">%s</text>'
+                 % (W / 2, y + bh / 2 + 6, esc(f["body"]), c["ink"],
+                    esc(wrap(label, 18, w1 - 30, max_lines=1)[0] if label else "")))
+        if val:
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="17" fill="%s" '
+                     'text-anchor="start" font-weight="700">%s</text>'
+                     % (W / 2 + w0 / 2 + 18, y + bh / 2 + 6, esc(f["mono"]), accents[i % 3],
+                        esc(val)))
+    return p
+
+
+def draw_curve(b, spec):
+    """Two trajectories on the same axes. The argument is the shape, not the number."""
+    c, f = b["colors"], b["fonts"]
+    p = []
+    top = content_top(spec)
+    x0, x1 = 118.0, W - 150.0
+    y1 = min(H - 150, top + 300)
+    y0 = top + 18
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="2.5"%s/>'
+             % (x0, y0, x0, y1, c["muted"], rough(b)))
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-width="2.5"%s/>'
+             % (x0, y1, x1, y1, c["muted"], rough(b)))
+    SHAPES_ = {"rise": lambda t: t ** 2, "steep": lambda t: t ** 3,
+               "flat": lambda t: 0.12 + 0.06 * t, "fall": lambda t: max(0.0, 0.75 - t ** 1.6),
+               "sag": lambda t: 0.5 - 0.42 * math.sin(math.pi * t) + 0.32 * t,
+               "linear": lambda t: t}
+    curves = [(spec.get("a") or {}, c["accent1"]), (spec.get("b") or {}, c["accent3"])]
+    for idx, (cv, col) in enumerate(curves):
+        if not cv:
+            continue
+        fn = SHAPES_.get(str(cv.get("shape", "rise")), SHAPES_["rise"])
+        pts = []
+        for k in range(41):
+            t = k / 40
+            pts.append((x0 + t * (x1 - x0), y1 - fn(t) * (y1 - y0) * 0.94))
+        p.append('<path d="M %s" fill="none" stroke="%s" stroke-width="4" '
+                 'stroke-linecap="round"%s/>'
+                 % (" L ".join("%.1f %.1f" % q for q in pts), col, rough(b)))
+        ex, ey = pts[-1]
+        p.append('<circle cx="%.1f" cy="%.1f" r="7" fill="%s"/>' % (ex, ey, col))
+        if cv.get("label"):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="17" fill="%s" '
+                     'font-weight="700">%s</text>'
+                     % (ex + 14, ey + 5, esc(f["body"]), col, esc(str(cv["label"]))))
+    if spec.get("x"):
+        p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="14" fill="%s" '
+                 'text-anchor="middle" letter-spacing="2">%s</text>'
+                 % ((x0 + x1) / 2, y1 + 34, esc(f["mono"]), c["muted"], esc(str(spec["x"]))))
+    if spec.get("y"):
+        p.append('<text transform="translate(%.1f,%.1f) rotate(-90)" font-family="%s" '
+                 'font-size="14" fill="%s" text-anchor="middle" letter-spacing="2">%s</text>'
+                 % (x0 - 30, (y0 + y1) / 2, esc(f["mono"]), c["muted"], esc(str(spec["y"]))))
+    return p
+
+
+def draw_venn(b, spec):
+    """Two things and the part that belongs to both. The overlap is the point."""
+    c, f = b["colors"], b["fonts"]
+    p = []
+    top = content_top(spec)
+    cy = min(top + 148 + vcenter(spec, 300), H - 220)
+    r = 132.0
+    cxl, cxr = W / 2 - r * 0.56, W / 2 + r * 0.56
+    p.append('<circle cx="%.1f" cy="%.1f" r="%.1f" fill="%s" opacity="0.42" stroke="%s" '
+             'stroke-width="2.5"%s/>' % (cxl, cy, r, c["accent1"], c["accent1"], rough(b)))
+    p.append('<circle cx="%.1f" cy="%.1f" r="%.1f" fill="%s" opacity="0.42" stroke="%s" '
+             'stroke-width="2.5"%s/>' % (cxr, cy, r, c["accent3"], c["accent3"], rough(b)))
+    # labels sit outside their circle. Centring them inside puts them straight
+    # through the overlap label, which is the one word the figure exists to say.
+    for cxx, key, anchor in ((cxl - r - 20, "left", "end"), (cxr + r + 20, "right", "start")):
+        val = spec.get(key)
+        if not val:
+            continue
+        lines = wrap(str(val), 18, 300, max_lines=3)
+        for i, ln in enumerate(lines):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="18" fill="%s" '
+                     'text-anchor="%s" font-weight="700">%s</text>'
+                     % (cxx, cy - (len(lines) - 1) * 12 + i * 23, esc(f["body"]), c["ink"],
+                        anchor, esc(ln)))
+    if spec.get("overlap"):
+        for i, ln in enumerate(wrap(str(spec["overlap"]), 16, r * 0.86, max_lines=3)):
+            p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="16" fill="%s" '
+                     'text-anchor="middle" font-weight="700">%s</text>'
+                     % (W / 2, cy - 6 + i * 21, esc(f["body"]), c["ink"], esc(ln)))
+    if spec.get("note"):
+        p.append('<text x="%.1f" y="%.1f" font-family="%s" font-size="17" fill="%s" '
+                 'text-anchor="middle" font-style="italic">%s</text>'
+                 % (W / 2, cy + r + 46, esc(f["display"]), c["muted"], esc(str(spec["note"]))))
+    return p
+
+
 SHAPES = {
     "sequence": lambda b, s: draw_sequence(b, s, False),
     "framework": lambda b, s: draw_sequence(b, s, True),
@@ -508,6 +859,14 @@ SHAPES = {
     "matrix": draw_matrix,
     "stack": draw_stack,
     "timeline": draw_timeline,
+    "balance": draw_balance,
+    "chain": draw_chain,
+    "gap": draw_gap,
+    "network": draw_network,
+    "iceberg": draw_iceberg,
+    "funnel": draw_funnel,
+    "curve": draw_curve,
+    "venn": draw_venn,
 }
 
 
