@@ -7,6 +7,7 @@
 #
 #   bash scripts/update_estate.sh              # update the estate this script sits in
 #   bash scripts/update_estate.sh --dry-run    # show what would change, touch nothing
+#   bash scripts/update_estate.sh --check      # compare versions and show the dry run
 #   bash scripts/update_estate.sh --from ~/dev/estate-builder
 #
 # What it refreshes: the engine's own files. Scripts, style presets, the lane
@@ -24,7 +25,7 @@ DRY=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --from) ENGINE="$2"; shift 2 ;;
-    --dry-run) DRY=1; shift ;;
+    --dry-run|--check) DRY=1; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -65,6 +66,13 @@ import sys, os, shutil, pathlib, re, time, filecmp
 
 estate, engine, dry = sys.argv[1], sys.argv[2], sys.argv[3] == "1"
 E, G = pathlib.Path(estate), pathlib.Path(engine)
+version_file = G / "VERSION"
+target_version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else "unknown"
+marker = E / ".soulos-estate"
+marker_text = marker.read_text(encoding="utf-8") if marker.exists() else ""
+match = re.search(r"^engine\s+(.+)$", marker_text, re.M)
+current_version = match.group(1).strip() if match else "unknown"
+print("\nVersion: " + current_version + " -> " + target_version)
 
 # Engine-owned. Refreshed on update. Everything else in the estate is the
 # owner's and is never touched.
@@ -177,4 +185,15 @@ elif new or changed:
     print("Delete that folder once you are happy, then seal.")
 else:
     print("\nAlready up to date.")
+
+if not dry and target_version != "unknown" and current_version != target_version:
+    if marker.exists():
+        saved_marker = backup / ".soulos-estate"
+        saved_marker.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(marker, saved_marker)
+    lines = [line for line in marker_text.splitlines() if not line.startswith("engine ") and not line.startswith("updated ")]
+    lines.append("engine " + target_version)
+    lines.append("updated " + time.strftime("%Y-%m-%d"))
+    marker.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("Recorded engine version: " + target_version)
 PYUP

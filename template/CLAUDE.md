@@ -61,11 +61,11 @@ Your voice law and your raw dictation are not content.
 
 ## Staying current
 
-The stamp is a one-time copy, so an estate does not receive later engine work by
-itself. `bash scripts/update_estate.sh` refreshes the engine-owned files (scripts,
-style presets, lane templates, these rules) and never touches SOUL.md,
-brand/brand.json, your logo, your chapters, your figures, your article folders, or
-the well. Run it with --dry-run first. It backs up anything it replaces.
+SoulOS Studio reports when a newer engine is available. Nothing installs silently.
+The owner runs the private update command, reviews the dry run, and approves the
+change. `bash scripts/update_estate.sh` refreshes engine-owned files and never
+touches SOUL.md, brand/brand.json, the logo, chapters, figures, article folders,
+or the well. It backs up anything it replaces and records the installed version.
 
 ## Content types
 

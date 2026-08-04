@@ -1,0 +1,11 @@
+{
+  "version": "1.1.0",
+  "channel": "stable",
+  "released": "2026-08-04",
+  "minimumVersion": "1.0.0",
+  "notes": [
+    "Adds an owner-approved update path with version checks, backups, and checksum verification.",
+    "Adds guided setup files for people who prefer the OWOS installation experience.",
+    "Lets an owner import an existing SOUL.md and skip the voice interview."
+  ]
+}

@@ -13,7 +13,7 @@ Four questions (name, folder, book title, GitHub username), then the stamp. The 
 
 Then, inside the new estate, in any AI tool (Claude, Cowork, Codex):
 
-1. Paste `INTERVIEW.md` into the session. The interview asks twelve questions and writes their `SOUL.md`, the voice law, so no machine ever smooths them into sounding like everyone else.
+1. Choose how the estate learns their voice. They can paste `INTERVIEW.md` into the session and answer twelve questions, or import an existing `SOUL.md` during setup and skip the interview. The imported file is preserved exactly as provided.
 2. Start speaking. Every dictation lands verbatim and dated in `outputs/book-evidence/book-one/raw-dictations.md` before any shaping. That file is evidence and is never edited.
 3. On publish day: `gh repo create <slug> --private --source ~/dev/<slug> --push`
 4. From then on, one command ships everything: `bash scripts/seal_all.sh "what changed"`
@@ -57,3 +57,9 @@ bash -c "$(curl -fsSL https://owos.ai/install.sh)"
 ```
 
 It fetches this engine, refreshes it if they already have it, and runs the stamp. The four questions still run on their keyboard even though the installer arrived through a pipe. Hosting the file at owos.ai is a one-time deploy step on the One Water OS platform (Cloudflare).
+
+## Owner-controlled updates
+
+SoulOS Studio shows the current release and prepares the owner's private update command. A check reports whether an update is available without changing the estate. An update downloads the authenticated engine, verifies its SHA-256 checksum, shows a dry run, asks for approval, backs up every replaced engine-owned file, and records the installed version.
+
+The updater never touches `SOUL.md`, the owner's brand, logo, chapters, figures, dated article folders, verbatim well, or repository list. Updates are available automatically, but they are never silently installed.
