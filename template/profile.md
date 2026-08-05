@@ -7,6 +7,8 @@ email:
 links:
   - LinkedIn | https://www.linkedin.com/in/
 site_title:
+avatar_name:
+avatar_url:
 published: false
 ---
 
@@ -26,6 +28,8 @@ The frontmatter above:
   email       optional, and only put it here if you want it public
   links       one per line, "Label | URL"
   site_title  the browser tab. Defaults to your name
+  avatar_name the public name of your released knowledge avatar
+  avatar_url  its owner-approved hosted URL. Leave blank until it is released
   published   the site refuses to build until this is true
 -->
 

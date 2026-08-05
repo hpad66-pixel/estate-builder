@@ -94,6 +94,10 @@ article.post .head .d{font-family:%(mono)s;font-size:12.5px;color:var(--muted);m
 .bookcard .bt{font-family:%(display)s;font-weight:700;font-size:30px;margin-bottom:8px}
 .btn{display:inline-block;background:var(--a1);color:%(bg)s;border-radius:9px;padding:11px 20px;font-weight:700;font-size:15px;margin-top:16px}
 .btn:hover{text-decoration:none;opacity:.9}
+.avatar-callout{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;padding:28px;background:linear-gradient(145deg,var(--panel),var(--bg));margin:42px 0 10px}
+.avatar-callout::after{content:"";position:absolute;width:150px;height:150px;border:1px solid var(--a1);border-radius:50%%;right:-55px;top:-80px;opacity:.22;box-shadow:0 0 0 28px var(--a1)}
+.avatar-callout .eyebrow{font-family:%(mono)s;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--a1)}
+.avatar-callout h2{font-size:27px;margin:8px 0}.avatar-callout p{max-width:590px;color:var(--ink2)}
 footer.site{margin-top:76px;border-top:1px solid var(--line);padding:26px 0 60px;font-size:14px;color:var(--muted)}
 footer.site .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
 footer.site .built{margin-left:auto;font-family:%(mono)s;font-size:12px}
@@ -107,9 +111,12 @@ footer.site .built{margin-left:auto;font-family:%(mono)s;font-size:12px}
 
 def page(b, prof, title, body, depth=0, desc=""):
     up = "../" * depth
-    nav = "".join('<a href="%s%s">%s</a>' % (up, href, label) for href, label in
-                  (("index.html", "Home"), ("writing.html", "Writing"),
-                   ("book.html", "The book"), ("about.html", "About")))
+    nav_items = [("index.html", "Home"), ("writing.html", "Writing"),
+                 ("book.html", "The book"), ("about.html", "About")]
+    nav = "".join('<a href="%s%s">%s</a>' % (up, href, label) for href, label in nav_items)
+    if prof.get("avatar_url"):
+        nav += '<a href="%s" target="_blank" rel="noopener">Ask %s</a>' % (
+            html.escape(str(prof["avatar_url"])), html.escape(str(prof.get("avatar_name") or "my avatar")))
     mark = b.get("logo_text") or prof.get("name", "")
     cr = b.get("copyright") or prof.get("name", "")
     year = datetime.date.today().year
@@ -216,6 +223,13 @@ def main():
                  % ("".join("<span>%s</span>" % html.escape(str(m)) for m in meta_bits), linkhtml))
     home += "</section>"
     home += markdown(pbody.split("## Credentials")[0])
+    if prof.get("avatar_url"):
+        avatar_name = str(prof.get("avatar_name") or "My knowledge avatar")
+        home += ('<section class="avatar-callout"><div class="eyebrow">Source-backed knowledge avatar</div>'
+                 '<h2>Meet %s</h2><p>Ask about my approved work and inspect the sources behind the answer. '
+                 'The avatar is an AI interface to my released knowledge, not the person.</p>'
+                 '<a class="btn" href="%s" target="_blank" rel="noopener">Start a conversation</a></section>'
+                 % (html.escape(avatar_name), html.escape(str(prof["avatar_url"]))))
     if arts:
         home += "<h2>Writing</h2><div class='list'>"
         for a in arts[:5]:
